@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>WebSocket</title>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/css.css">
+
+    <!--<script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>-->
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="js/jquery.jqprint-0.3.js"></script>
+    <script src="js/jquery.imgbox.pack.js"></script>
+
+    <script>
+        function refreshQrcode(){
+            console.log("发送请求，刷新二维码");
+
+            var address = "https://ws2.sinaimg.cn/large/0069RVTdly1fv12e9ry3cj30e80e8gm2.jpg";
+
+            $("#qrcode").attr("src", address);
+
+            $("#printInvoice").attr("disabled", true);
+            $("#invoicePanel").hide();
+
+        }
+
+        var invoiceAddress = "https://ws1.sinaimg.cn/large/0069RVTdly1fv12hkna0rj30go09mgmi.jpg";
+        function receiveMessage(message){
+
+            $("#invoiceImg").attr("src", invoiceAddress);
+            $(".clickImg").imgbox({
+                'speedIn'		: 0,
+                'speedOut'		: 0,
+                'alignment'		: 'center',
+                'overlayShow'	: true,
+                'allowMultiple'	: false
+            });
+
+            $("#printInvoice").attr("disabled", false);
+            $("#invoicePanel").show();
+        }
+
+        function printInvoice(){
+            $("#printArea").jqprint({
+                debug: false,
+                importCSS: true,
+                printContainer: true,
+                operaSupport: false
+            });
+        }
+
+        function initQrcode(){
+            var initAddress = "https://ws2.sinaimg.cn/large/0069RVTdly1fv1330qyxoj30e80e8wep.jpg";
+            $("#qrcode").attr("src", initAddress);
+            $("#invoicePanel").hide();
+            $("#printInvoice").attr("disabled", true);
+
+        }
+
+
+
+        $(document).ready(function () {
+
+            initQrcode();
+
+            $("#invoicePanel").show();
+
+        });
+
+        function printPage(obj){
+
+            console.log($(obj).parent().prev().html())
+            var printObj = $(obj).parent().prev();
+
+            printObj.jqprint({
+                debug: false,
+                importCSS: true,
+                printContainer: true,
+                operaSupport: false
+            });
+
+        }
+    </script>
+
+</head>
+<body>
+
+<nav class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">发票打印</a>
+        </div>
+    </div>
+</nav>
+
+<div>
+    <img id="qrcode" src="" alt="二维码" class="img-responsive center-block qr_code">
+</div>
+
+<div align="center">
+    <div class="btn-group">
+        <button type="button" class="btn btn-default refresh_btn width100" onclick="refreshQrcode()">刷新二维码</button>
+        <button id="printInvoice" type="button" class="btn btn-primary refresh_btn width100" disabled onclick="printInvoice()">打印发票</button>
+    </div>
+</div>
+
+<div class="panel panel-default margin30" id="invoicePanel">
+    <div class="panel-body">
+
+        <div class="col-md-4 col-lg-4 col-sm-4">
+
+            <table class="table table-striped info_table">
+                <thead>
+                <tr>
+                    <th>基本信息</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td class="col-lg-3 col-md-3 col-sm-3 col-xs-3">姓名</td>
+                    <td class="col-lg-9 col-md-9 col-sm-9 col-xs-9">张三</td>
+                </tr>
+                <tr>
+                    <td class="col-lg-3 col-md-3 col-sm-3 col-xs-3">字段二</td>
+                    <td class="col-lg-9 col-md-9 col-sm-9 col-xs-9">李四</td>
+                </tr>
+                <tr>
+                    <td class="col-lg-3 col-md-3 col-sm-3 col-xs-3">字段三</td>
+                    <td class="col-lg-9 col-md-9 col-sm-9 col-xs-9">哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈</td>
+                </tr>
+                <tr>
+                    <td class="col-lg-3 col-md-3 col-sm-3 col-xs-3">身份证号</td>
+                    <td class="col-lg-9 col-md-9 col-sm-9 col-xs-9">2367489182736839101827</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-6 col-lg-6 col-sm-6">
+            <a href="#">
+                <img class="media-object invoice_img" src="https://ws1.sinaimg.cn/large/0069RVTdly1fv12hkna0rj30go09mgmi.jpg" alt="发票">
+            </a>
+        </div>
+        <div class="col-md-2 col-lg-2 col-sm-2">
+            <button class="btn btn-lg btn-primary" onclick="javascript:printPage(this)" id="">打印</button>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

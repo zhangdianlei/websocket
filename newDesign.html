@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>WebSocket</title>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/new_design.css">
+
+    <!--<script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>-->
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="js/jquery.jqprint-0.3.js"></script>
+    <script src="js/jquery.imgbox.pack.js"></script>
+
+    <script>
+        var url = "ws://180.76.188.189:8890/api/v1/event/aaa?channel=print_invoice";
+        var websocket = new WebSocket(url);
+        var pointer = 0;
+
+        function onOpen(evt) {
+            logMessage("CONNECTED");
+            doSend("WebSocket rocks");
+        }
+
+        function onClose(evt) {
+            $("#reloadPage").modal("show")
+            $("#qrcode").hide();
+            $("#login").hide();
+            $("#disconnect").show();
+        }
+
+        function onMessage(evt) {
+            var data = evt.data;
+
+            if (pointer === 3){
+                data = ""
+            } else if(pointer === 5){
+                data = "https://ws1.sinaimg.cn/large/0069RVTdly1fv12hkna0rj30go09mgmi.jpg";
+
+            } else if(pointer === 7){
+                data = "https://ws3.sinaimg.cn/large/006tNbRwly1fv4gscf4ikj30sg0ju76f.jpg";
+
+            }
+
+            if (data.indexOf("CST") !== -1){
+
+            } else if (data.indexOf("start") !== -1){
+                var obj = JSON.parse(data);
+
+                var httpImgUrl = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" + obj.data;
+                $(".qr_code").attr("src", httpImgUrl);
+                $("#qrcode").show();
+
+            } else if (data === ""){
+                login();
+
+            } else if (data.indexOf("http") !== -1){
+                var imgUrl = data;
+
+                if (modalOpend()){
+
+                    $("#invoiceImg").attr("src", imgUrl);
+
+                } else {
+
+                    $("#invoiceImg").attr("src", imgUrl);
+                    showModal();
+                }
+
+            }
+
+            if (pointer++ > 10){
+                websocket.close();
+            }
+        }
+
+        function onError(evt) {
+            logMessage('Error');
+        }
+
+        function doSend(message) {
+            logMessage("SENT: " + message);
+            websocket.send(message);
+        }
+
+        function logMessage(message) {
+            console.log(message)
+        }
+
+        function showModal(){
+            $('#printInvoice').modal('show')
+        }
+
+        function printInvoice(obj){
+
+            var printObj = $(obj).parent().prev();
+            printObj.jqprint({
+                debug: false,
+                importCSS: true,
+                printContainer: true,
+                operaSupport: false
+            });
+
+        }
+
+        function login(){
+            $("#qrcode").hide();
+            $("#login").show();
+        }
+
+        $(document).ready(function () {
+
+        });
+
+        function modalOpend() {
+            if($('body').hasClass('modal-open')){
+                return true
+            }else{
+                return false
+            }
+        }
+
+        function reloadPage() {
+            window.location.reload();
+        }
+
+    </script>
+
+</head>
+<body>
+
+<nav class="navbar navbar-default nav_style" role="navigation">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">
+                <img alt="rrs" src="imgs/rrs_logo.png" class="logo">
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div id="qrcode">
+    <img src="" alt="二维码" class="img-responsive center-block qr_code">
+    <div class="introduction">您可在日日顺APP上扫码登陆</div>
+</div>
+
+<div id="login">
+    <img src="imgs/success.png" alt="二维码" class="img-responsive center-block login_success">
+    <div class="login_info">登录成功</div>
+    <div class="login_intro">正在等待打印发票，您可以在日日顺APP选择发票</div>
+</div>
+
+<div id="disconnect">
+    <img src="imgs/disconnect.png" alt="连接断开" class="img-responsive center-block disconnect">
+    <div class="introduction">连接已断开，请 <a href="javascript:location.reload();">刷新</a> 页面</div>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade bs-example-modal-lg" id="printInvoice" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">打印发票</h4>
+            </div>
+            <div class="modal-body">
+                <a href="#">
+                    <img id="invoiceImg" class="invoice_img center-block" src="https://ws1.sinaimg.cn/large/0069RVTdly1fv12hkna0rj30go09mgmi.jpg" alt="发票">
+                </a>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="javascript:printInvoice(this)">打印</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="reloadPage" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">连接已断开</h4>
+            </div>
+            <div class="modal-body">
+                请刷新页面重新连接
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="reloadPage()">刷新</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    websocket.onmessage = function(evt) {
+        onMessage(evt)
+    };
+
+    websocket.onclose = function(evt) {
+        onClose(evt)
+    };
+
+    $("#qrcode").hide();
+    $("#login").hide();
+    $("#disconnect").hide();
+
+</script>
+
+</body>
+</html>
